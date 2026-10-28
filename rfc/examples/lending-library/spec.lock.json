@@ -1,0 +1,74 @@
+{
+ "records": [
+  "2026-03-02-no-late-fines.md"
+ ],
+ "statements": {
+  "0b7199": {
+   "kind": "T",
+   "where": "spec/lending/charter.md:5",
+   "sha": "065f54671e26a4c0",
+   "text": "A **member** is a person the library has registered to borrow books."
+  },
+  "3bpfef": {
+   "kind": "R",
+   "where": "spec/lending/charter.md:13",
+   "sha": "6046b63e657c0f50",
+   "text": "The library **must not** charge a member for returning a book late."
+  },
+  "5tps87": {
+   "kind": "R",
+   "where": "spec/lending/charter.md:12",
+   "sha": "9d195aea77c031c7",
+   "text": "A member with an overdue loan **must not** borrow another book."
+  },
+  "aq165k": {
+   "kind": "T",
+   "where": "spec/lending/charter.md:6",
+   "sha": "387c9faaff6f2a1e",
+   "text": "A **loan** is one book lent to one member, from the day it is lent until it comes back."
+  },
+  "cxsjfa": {
+   "kind": "R",
+   "where": "spec/lending/charter.md:11",
+   "sha": "ed057bb81052e4db",
+   "text": "A book **must not** be lent while it is on an open loan."
+  },
+  "d3kw18": {
+   "kind": "D",
+   "where": "bindings/tech/lendbox.md:5",
+   "sha": "c7d69ee01a6c8944",
+   "text": "The lending rules hold no state: they take the member, the book and the loans that bear on them, and answer with a new loan or a refusal."
+  },
+  "dz64m8": {
+   "kind": "D",
+   "where": "bindings/tech/lendbox.md:3",
+   "sha": "de607d5bd4de7538",
+   "text": "Lendbox is one service with one SQLite store on the library's server."
+  },
+  "g1j5t8": {
+   "kind": "E",
+   "where": "spec/lending/charter.md:15",
+   "sha": "9a0122f987c7417a",
+   "text": "*Example.* A member returns a book a week late. Nothing is charged, and the member can borrow again the same day."
+  },
+  "j0jc17": {
+   "kind": "F",
+   "where": "bindings/product/lendbox.md:3",
+   "sha": "941ec796999005a9",
+   "text": "Members borrow at a kiosk at the desk and need no account to do so."
+  },
+  "kx1kt6": {
+   "kind": "T",
+   "where": "spec/lending/charter.md:7",
+   "sha": "608a8b59746eed14",
+   "text": "A loan is **overdue** when its due date has passed and the book is not back."
+  },
+  "s3w27r": {
+   "kind": "F",
+   "where": "bindings/product/lendbox.md:4",
+   "sha": "2c73590fee08a370",
+   "text": "A member is reminded two days before a loan is due."
+  }
+ },
+ "translations": {}
+}

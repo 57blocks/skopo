@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "skopo",
+  "description": "Skopo: intent documentation one level above the code. Harness plugins that recover and check a skopository.",
+  "owner": {
+    "name": "57Blocks"
+  },
+  "plugins": [
+    {
+      "name": "skopo",
+      "description": "Recover a skopository from one or more code repositories (the spec, the product and tech bindings, and the questions where the sources disagree), and check it.",
+      "source": "./tools/harness-plugins/claude-code",
+      "category": "development"
+    }
+  ]
+}

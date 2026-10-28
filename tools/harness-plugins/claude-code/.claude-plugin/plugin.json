@@ -1,0 +1,16 @@
+{
+  "name": "skopo",
+  "version": "0.5.1",
+  "description": "Create a skopository (Skopo intent documentation) by recovering it from code, lint it, and lock it.",
+  "author": {
+    "name": "57Blocks"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "skopo",
+    "intent",
+    "specification",
+    "recovery",
+    "documentation"
+  ]
+}

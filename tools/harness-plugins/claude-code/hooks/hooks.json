@@ -1,0 +1,29 @@
+{
+  "description": "When a Skopo recovery starts, records the session and its transcript path in .skopo/sessions.jsonl, so the run can later be matched with what it cost. Records nothing else and never blocks.",
+  "hooks": {
+    "UserPromptExpansion": [
+      {
+        "matcher": "^skopo:init$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session.mjs\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session.mjs\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

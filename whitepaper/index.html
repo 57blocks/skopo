@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introducing Skopo</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Schibsted+Grotesk:wght@500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<!--
+  The Skopo whitepaper, rendered from Markdown.
+
+  The language, first that applies: ?lang=zh or ?lang=en; the reader's last choice on this page; the
+  first of the browser's languages that is Chinese or English; English. The button beside the theme
+  switch changes it in place, and only languages the page can load are offered.
+
+  Where the Markdown comes from, first that works:
+    1. the copy build.mjs embeds in #skopo-md;
+    2. ?md=<url> (only when served from localhost or opened from disk), or ./zh.md or ./en.md next to
+       this file, when served over http;
+    3. the published copy on the repository's main branch (REMOTE below), which also works when this
+       file is opened from disk, as long as the repository is public.
+
+  The design comes from Claude Design (design/Skopo-Whitepaper.dc.html); this file reproduces it
+  without its runtime. Markdown conventions are described in design-prompt.md.
+-->
+<style>
+html,body{margin:0;padding:0;background:#FFFFFF}
+body:has([data-skopo][data-theme="dark"]){background:#111111}
+[data-skopo]{--bg:#FFFFFF;--panel:#F7F7F5;--code-bg:#F4F4F2;--ink:#111111;--ink-body:#262626;--ink2:#555555;--ink3:#7A7A7A;--ink4:#A3A3A3;--line:#E6E6E6;--line2:#CFCFCF;--accent:#D9531E;--accent-deep:#B8431A;--accent-soft:#FBE9E1;--accent-tint:#F0B9A3;--l-spec:#111111;--l-spec-f:#E4E4E4;--l-prod:#4D4D4D;--l-prod-f:#EDEDED;--l-tech:#8F8F8F;--l-tech-f:#F3F3F3;--l-code:#C4C4C4;--l-code-f:#F8F8F8;--display:"Schibsted Grotesk","PingFang SC","Noto Sans SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;--sans:"Instrument Sans","PingFang SC","Noto Sans SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"PingFang SC","Noto Sans SC",monospace;--measure:37em;--wide:960px;--lh:1.9;--gutter:20px;text-autospace:normal;text-spacing-trim:normal;line-break:strict;-webkit-font-smoothing:antialiased;font-kerning:normal;box-sizing:border-box;width:100%;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:var(--lh)}
+[data-skopo][lang="en"]{--measure:40em;--lh:1.65}
+@media screen{[data-skopo][data-theme="dark"]{--bg:#111111;--panel:#191919;--code-bg:#1E1E1E;--ink:#F5F5F5;--ink-body:#DCDCDC;--ink2:#B3B3B3;--ink3:#8A8A8A;--ink4:#6B6B6B;--line:#2A2A2A;--line2:#3D3D3D;--accent:#F0703D;--accent-deep:#F7A07A;--accent-soft:#33201A;--accent-tint:#8A3F22;--l-spec:#F5F5F5;--l-spec-f:#2E2E2E;--l-prod:#BDBDBD;--l-prod-f:#262626;--l-tech:#7D7D7D;--l-tech-f:#1F1F1F;--l-code:#4A4A4A;--l-code-f:#171717;color-scheme:dark}}
+[data-skopo] a{color:var(--accent);text-decoration:none}
+[data-skopo] a:hover{text-decoration:underline;text-underline-offset:3px}
+[data-skopo] ::selection{background:#111111;color:#fff}
+
+/* chrome */
+.top-btns{position:fixed;top:16px;right:16px;z-index:5;display:flex;gap:8px}
+.theme-btn{font-family:var(--sans);font-weight:500;font-size:12px;color:var(--ink2);background:var(--bg);border:1px solid var(--line2);border-radius:999px;padding:7px 14px;cursor:pointer}
+.theme-btn:hover{color:var(--ink);border-color:var(--accent)}
+.shell{display:grid;grid-template-columns:minmax(0,1fr);max-width:1320px;margin:0 auto}
+.side{display:none;position:sticky;top:0;height:100vh;overflow-y:auto;box-sizing:border-box;padding:56px 20px 40px 36px;border-right:1px solid var(--line)}
+.label-caps{font-weight:600;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+.side .label-caps{margin-bottom:16px}
+.side .doc-title{font-size:14px;line-height:1.5;font-weight:600;color:var(--ink);margin-bottom:28px;text-wrap:balance}
+.side nav{display:flex;flex-direction:column}
+.side nav a{display:grid;grid-template-columns:34px minmax(0,1fr);gap:4px;padding:6px 0;text-decoration:none;color:var(--ink2);font-size:13.5px;line-height:1.45}
+.side nav a .n{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.side nav a.active{color:var(--ink)}
+.side nav a.active .n{color:var(--accent)}
+main{min-width:0;padding:0 var(--gutter) 160px}
+
+/* cover */
+.cover{display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;padding:120px 0 64px;max-width:var(--wide);min-height:92vh}
+.cover .status{font-size:14px;line-height:1.6;color:var(--ink2);margin-bottom:48px;font-variant-numeric:tabular-nums}
+.cover h1{margin:0;font-family:var(--display);font-size:clamp(34px,5.4vw,62px);line-height:1.18;font-weight:700;letter-spacing:-0.015em;text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere;max-width:14em;color:var(--ink)}
+.cover .subtitle{margin:24px 0 0;font-family:var(--display);font-size:clamp(18px,2.2vw,24px);line-height:1.4;font-weight:600;color:var(--ink2);max-width:28em;text-wrap:balance}
+.inline-toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 32px;margin-top:88px;padding-top:20px;border-top:1px solid var(--line)}
+.inline-toc .label-caps{grid-column:1 / -1;margin-bottom:8px}
+.inline-toc a{display:grid;grid-template-columns:34px minmax(0,1fr);gap:4px;padding:7px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14px;line-height:1.45}
+.inline-toc a .n{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+
+/* sections and text */
+section{padding-top:128px}
+.opener{max-width:var(--wide);border-top:1px solid var(--ink);padding-top:22px;margin-bottom:56px;display:flex;flex-direction:column;gap:8px}
+.opener .num{font-family:var(--display);font-size:15px;line-height:1.4;font-weight:600;letter-spacing:.02em;color:var(--accent)}
+.opener h2{margin:0;font-family:var(--display);font-size:clamp(28px,3.4vw,38px);line-height:1.25;font-weight:700;letter-spacing:-0.015em;text-wrap:balance;word-break:keep-all;overflow-wrap:anywhere;color:var(--ink)}
+h3{margin:64px 0 18px;max-width:var(--measure);display:flex;gap:14px;align-items:baseline;font-family:var(--display);font-size:21px;line-height:1.45;font-weight:600;letter-spacing:-0.01em;color:var(--ink)}
+h3 .num{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--accent)}
+p.body{margin:0 0 1.2em;max-width:var(--measure);font-family:var(--sans);font-size:17px;line-height:var(--lh);color:var(--ink-body);text-wrap:pretty}
+ul.body,ol.body{margin:0 0 1.4em;max-width:var(--measure);color:var(--ink-body)}
+ul.body{padding-left:1.25em}
+ol.body{padding-left:1.5em}
+ul.body li,ol.body li{margin:0 0 .55em;padding-left:.3em;text-wrap:pretty}
+strong{font-weight:600;color:var(--ink)}
+code.inl{font-family:var(--mono);font-size:.86em;padding:.12em .36em;border-radius:4px;background:var(--code-bg);color:var(--ink)}
+a.codelink{font-family:var(--mono);font-size:.86em}
+blockquote.pull{margin:72px 0;padding:0;max-width:var(--wide)}
+blockquote.pull .bar{width:48px;height:3px;border-radius:2px;background:var(--accent);margin-bottom:28px}
+blockquote.pull p{margin:0;max-width:20em;font-family:var(--display);font-size:clamp(26px,3.2vw,36px);line-height:1.4;font-weight:700;letter-spacing:-0.015em;color:var(--ink);text-wrap:balance}
+blockquote.bq{margin:0 0 1.4em;padding:0 0 0 1.2em;max-width:var(--measure);color:var(--ink2);border-left:2px solid var(--line2)}
+.stats{margin:48px 0 64px;max-width:var(--wide);display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:28px 20px}
+.stat{border-top:2px solid var(--ink);padding-top:16px}
+.stat .v{display:flex;align-items:baseline;flex-wrap:wrap;color:var(--ink);line-height:1.1}
+.stat .pre,.stat .unit{font-size:16px;font-weight:500;color:var(--ink2);white-space:pre}
+.stat .num{font-family:var(--display);font-size:44px;font-weight:700;letter-spacing:-0.025em;font-variant-numeric:tabular-nums}
+.stat .lab{margin-top:10px;font-size:13.5px;line-height:1.55;color:var(--ink3);text-wrap:pretty}
+.bet{margin:48px 0 56px;max-width:var(--measure);border:1px dashed var(--accent);border-radius:12px;padding:24px 28px 8px}
+.bet .label-caps{color:var(--accent);margin-bottom:12px}
+.bet p{margin:0 0 1em;font-size:17px;line-height:var(--lh);color:var(--ink);text-wrap:pretty}
+.note{margin:4px 0 28px;max-width:var(--measure);border-top:1px solid var(--line2);padding-top:10px;font-size:14px;line-height:1.7;color:var(--ink2)}
+.note p{margin:0 0 .6em;font-size:14px;color:var(--ink2)}
+.skopo{margin:28px 0 36px;max-width:min(100%,820px);box-sizing:border-box;background:var(--code-bg);border-radius:8px;padding:10px 0 18px;color:var(--ink)}
+.skopo .sk-bar{display:flex;justify-content:flex-end;gap:4px;padding:0 10px 4px}
+.skopo .sk-bar button{font-family:var(--mono);font-weight:600;font-size:11.5px;line-height:1;color:var(--ink3);background:none;border:1px solid var(--line2);border-radius:999px;padding:5px 10px;cursor:pointer}
+.skopo .sk-bar button:hover{color:var(--ink);border-color:var(--ink3)}
+.skopo .sk-bar button[aria-pressed="true"]{color:#FFFFFF;border-color:var(--accent);background:var(--accent)}
+.skopo[data-view="rendered"] .sk-source,.skopo[data-view="source"] .sk-rendered{display:none}
+.skopo .sk-sec{border-left:2px solid var(--l-spec);padding:2px 26px 2px 20px;margin-top:16px}
+.skopo .sk-sec:first-child{margin-top:0}
+.skopo .sk-file{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:6px;font-family:var(--mono);font-size:12px;line-height:1.5}
+.skopo .sk-layer{font-weight:700}
+.skopo .sk-path{color:var(--ink3)}
+.skopo .sk-rendered{font-family:var(--sans);font-size:15px;line-height:1.75;color:var(--ink-body)}
+.skopo .sk-rendered ul{margin:0 0 .4em;padding-left:1.2em}
+.skopo .sk-rendered li{margin:0 0 .35em}
+.skopo .sk-rendered p{margin:0 0 .5em}
+.skopo .sk-rendered blockquote{margin:.3em 0 .6em;padding-left:1em;border-left:2px solid var(--line2);color:var(--ink2)}
+.skopo .sk-rendered .sk-h{font-weight:700;color:var(--ink);margin:0 0 .5em}
+.skopo .sk-rendered table{border-collapse:collapse;margin:.2em 0 .8em;font-size:14px;line-height:1.6}
+.skopo .sk-rendered th,.skopo .sk-rendered td{padding:5px 18px 5px 0;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+.skopo .sk-rendered td:first-child{font-weight:600;color:var(--ink)}
+.skopo .sk-source pre{margin:0;font-family:var(--mono);font-size:13.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+.skopo .kw{color:var(--accent);font-weight:700}
+.skopo .anc,.skopo .id,.skopo code{font-family:var(--mono);font-size:.86em;color:var(--ink3)}
+.skopo .anc b{font-weight:700}
+.skopo .ref{font-family:var(--mono);font-size:.86em;color:var(--ink4)}
+pre.code{margin:28px 0 36px;max-width:min(100%,820px);width:max-content;box-sizing:border-box;background:var(--code-bg);border-radius:8px;padding:18px 24px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--ink)}
+.tbl{margin:32px 0 44px;max-width:var(--wide);overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.65}
+.tbl th{text-align:left;font-weight:500;font-size:13px;line-height:1.5;color:var(--ink3);padding:0 20px 10px 0;border-bottom:1px solid var(--ink);vertical-align:bottom}
+.tbl td{padding:11px 20px 11px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-body)}
+.tbl td:first-child{font-weight:600;color:var(--ink)}
+figure.fig{margin:56px 0 64px;max-width:var(--wide)}
+.figpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:40px 32px;overflow-x:auto;color:var(--ink);font-family:var(--sans)}
+.figpanel > div{min-width:720px}
+figcaption{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin-top:14px;max-width:var(--measure)}
+figcaption .id{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+figcaption .t{font-size:15px;line-height:1.5;color:var(--ink2)}
+.fig-pending{min-height:180px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:repeating-linear-gradient(135deg,transparent 0 10px,var(--line) 10px 11px);font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.loading{padding:120px var(--gutter);font-size:15px;color:var(--ink2);max-width:42em}
+.loading code{font-family:var(--mono);font-size:.9em;background:var(--code-bg);padding:.1em .35em;border-radius:4px}
+
+@media (min-width:720px){[data-skopo]{--gutter:48px}}
+@media (min-width:1180px){[data-skopo]{--gutter:56px}.shell{grid-template-columns:260px minmax(0,1fr)}.side{display:block}.inline-toc{display:none}}
+@media (min-width:1380px){.note{float:right;clear:right;width:220px;margin:6px 0 24px 32px}}
+@media print{
+html,body{background:#fff!important}
+.side,.top-btns{display:none!important}
+.shell{display:block!important;max-width:none!important}
+main{padding:0!important}
+.inline-toc{display:grid!important}
+.cover{min-height:0!important;padding-top:2.4in!important;break-after:page}
+section{break-before:page;padding-top:0!important}
+.keep,table,pre,figure{break-inside:avoid}
+h2,h3,.opener{break-after:avoid}
+.figpanel{overflow:visible!important;zoom:.84}
+.figpanel > div{min-width:0!important}
+a[data-ext]::after{content:" (" attr(href) ")";font-family:var(--mono);font-size:.8em;color:var(--ink3);text-decoration:none}
+.note{float:none!important;width:auto!important}
+.skopo .sk-bar,.skopo .sk-source{display:none!important}
+.skopo .sk-rendered{display:block!important}
+@page{margin:18mm 16mm}
+}
+</style>
+</head>
+<body>
+<div id="app" data-skopo data-theme="light" lang="zh"><div class="loading">Loading…</div></div>
+<script id="skopo-md">/* build.mjs embeds the Markdown here: window.SKOPO_MD = { zh: "…" } */</script>
+<script>
+'use strict';
+(() => {
+  // ---------- small DOM helper ----------
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'style') n.style.cssText = v;
+      else if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return n;
+  };
+  const svg = (markup) => { const t = document.createElement('template'); t.innerHTML = markup.trim(); return t.content.firstChild; };
+
+  const params = new URLSearchParams(location.search);
+  // The published Markdown. raw.githubusercontent.com allows cross-origin reads of public
+  // repositories only; a private repository answers 404 to a page, which has no credentials.
+  const REMOTE = 'https://raw.githubusercontent.com/57blocks/skopo/main/whitepaper/';
+  const UIS = {
+    zh: { toc: '目录', bet: '我们的赌注', light: '浅色', dark: '深色', pending: '图未绘制', person: '人', raw: '显示 Markdown 原文', from: '自然语言', to: '编程语言', other: 'English', otherTitle: 'Read in English' },
+    en: { toc: 'Contents', bet: 'Our bet', light: 'Light', dark: 'Dark', pending: 'Figure not drawn', person: 'people', raw: 'Show the Markdown source', from: 'Natural language', to: 'Programming language', other: '中文', otherTitle: '阅读中文版' },
+  };
+  const LANGS = Object.keys(UIS);
+  const LANG_KEY = 'skopo-whitepaper-lang';
+  // A build embeds the languages it offers; served or opened otherwise, both are offered.
+  const OFFERED = window.SKOPO_MD ? LANGS.filter((l) => window.SKOPO_MD[l]) : LANGS;
+  const stored = () => { try { return localStorage.getItem(LANG_KEY); } catch { return null; } };
+  const store = (lang) => { try { localStorage.setItem(LANG_KEY, lang); } catch { /* private window: keep the choice for this visit only */ } };
+  const browserLang = () => (navigator.languages?.length ? navigator.languages : [navigator.language || ''])
+    .map((l) => String(l).toLowerCase().split('-')[0]).find((l) => LANGS.includes(l));
+  let LANG = [params.get('lang'), window.SKOPO_LANG, stored(), browserLang(), 'en'].find((l) => OFFERED.includes(l)) || OFFERED[0];
+  let UI = UIS[LANG];
+
+  // ---------- Markdown ----------
+  // A link keeps its target only if it is relative, or http, https or mailto: the Markdown may come
+  // from elsewhere, and a javascript: link must never reach the page.
+  const safeHref = (h) => { const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(h.trim()); return !scheme || ['http', 'https', 'mailto'].includes(scheme[1].toLowerCase()) ? h : '#'; };
+  // Inline: code, links, bold, italic. Returns DOM nodes.
+  const inline = (s) => {
+    const out = []; const re = /(`([^`]+)`)|(\[([^\]]+)\]\(([^)\s]+)\))|(\*\*([^*]+)\*\*)|(\*([^*\s][^*]*?)\*)/g;
+    let last = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > last) out.push(s.slice(last, m.index));
+      if (m[1]) out.push(el('code', { class: 'inl' }, m[2]));
+      else if (m[3]) {
+        const tx = m[4];
+        const href = safeHref(m[5]);
+        out.push(/^`[^`]+`$/.test(tx) ? el('a', { href, 'data-ext': true, class: 'codelink' }, tx.slice(1, -1)) : el('a', { href, 'data-ext': true }, tx));
+      } else if (m[6]) out.push(el('strong', {}, m[7]));
+      else out.push(el('em', {}, m[9]));
+      last = re.lastIndex;
+    }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  };
+  const plain = (s) => s.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  const quoted = (s) => [...s.matchAll(/[“"]([^”"]+)[”"]/g)].map((m) => m[1]);
+  // A figure's labels: the quoted words right after 标 (or "label"), in the order they appear.
+  const labelled = (lines) => lines.flatMap((l) => [...l.matchAll(/(?:标|label(?:led)?\s*)[“"]([^”"]+)[”"]/gi)].map((m) => m[1]));
+
+  const tableCells = (row) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((x) => x.trim());
+
+  function callout(buf) {
+    const m = buf[0].match(/^\[!(\w+)\]\s*(.*)$/);
+    if (!m) return { type: 'bq', text: buf.join(' ') };
+    const T = m[1].toUpperCase();
+    const rest = [m[2], ...buf.slice(1)].filter((x) => x.trim() !== '');
+    if (T === 'QUOTE') return { type: 'quote', text: rest.join(' ') };
+    if (T === 'STATS') return { type: 'stats', items: rest.map((l) => {
+      const [v, lab] = l.split('|').map((x) => (x || '').trim());
+      const mm = v.match(/^(\D*?)([\d][\d.,]*)(.*)$/);
+      return mm ? { pre: mm[1], num: mm[2], unit: mm[3], label: lab } : { pre: '', num: v, unit: '', label: lab };
+    }) };
+    if (T === 'BET') return { type: 'bet', paras: rest };
+    if (T === 'FIGURE') {
+      const h = m[2].match(/^(fig-[\w-]+)\s*[·•|-]?\s*(.*)$/);
+      return { type: 'figure', id: h ? h[1] : m[2], title: h ? h[2] : '', spec: buf.slice(1) };
+    }
+    return { type: 'note', paras: rest };
+  }
+
+  function parse(md) {
+    const lines = md.replace(/\r/g, '').split('\n');
+    const doc = { title: '', subtitle: '', status: '' };
+    const sections = []; let cur = { id: 'intro', opener: false, num: '', title: '', blocks: [] }; sections.push(cur);
+    const push = (b) => cur.blocks.push(b);
+    const special = (l) => /^(#{1,6} |>|\||```|\s*[-*] |\s*\d+\. |---+\s*$)/.test(l);
+    let i = 0, n = 0, m;
+    while (i < lines.length) {
+      const L = lines[i];
+      if (/^\s*$/.test(L) || /^---+\s*$/.test(L)) { i++; continue; }
+      if ((m = L.match(/^# (.+)/))) { doc.title = m[1].trim(); i++; continue; }
+      if ((m = L.match(/^## (.+)/))) {
+        const t = m[1].trim(); const mm = t.match(/^(§\s?\d+)\s+(.*)$/);
+        cur = { id: 's' + (n++), opener: true, num: mm ? mm[1] : '', title: mm ? mm[2] : t, blocks: [] }; sections.push(cur); i++; continue;
+      }
+      if ((m = L.match(/^#{3,6} (.+)/))) { const mm = m[1].match(/^(\d+(?:\.\d+)*)\s+(.*)$/); push({ type: 'h3', num: mm ? mm[1] : '', text: mm ? mm[2] : m[1] }); i++; continue; }
+      if (L.startsWith('```')) {
+        const lang = L.slice(3).trim(); const buf = []; i++;
+        while (i < lines.length && !lines[i].startsWith('```')) { buf.push(lines[i]); i++; }
+        i++; push({ type: lang === 'skopo' ? 'skopo' : 'code', lines: buf }); continue;
+      }
+      if (L.startsWith('>')) {
+        const buf = []; while (i < lines.length && lines[i].startsWith('>')) { buf.push(lines[i].replace(/^>\s?/, '')); i++; }
+        push(callout(buf)); continue;
+      }
+      if (L.startsWith('|')) {
+        const rows = []; while (i < lines.length && lines[i].startsWith('|')) { rows.push(lines[i]); i++; }
+        const body = rows.filter((r, k) => k !== 1 || !/^\|[\s:|-]+\|?\s*$/.test(r));
+        push({ type: 'table', head: tableCells(body[0]), rows: body.slice(1).map(tableCells) }); continue;
+      }
+      if (/^\s*[-*] /.test(L) || /^\s*\d+\. /.test(L)) {
+        const ordered = /^\s*\d+\. /.test(L); const items = [];
+        while (i < lines.length && (ordered ? /^\s*\d+\. /.test(lines[i]) : /^\s*[-*] /.test(lines[i]))) {
+          let t = lines[i].replace(/^\s*([-*]|\d+\.)\s+/, ''); i++;
+          while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !special(lines[i].trim())) { t += ' ' + lines[i].trim(); i++; }
+          items.push(t);
+        }
+        push({ type: ordered ? 'ol' : 'ul', items }); continue;
+      }
+      const buf = [L]; i++;
+      while (i < lines.length && !/^\s*$/.test(lines[i]) && !special(lines[i])) { buf.push(lines[i]); i++; }
+      const text = buf.join(' ');
+      if (n === 0 && doc.title && !doc.subtitle && !doc.status && /^\*[^*].*\*$/.test(text.trim())) { doc.subtitle = text.trim().slice(1, -1); continue; }
+      if (n === 0 && doc.title && !doc.status) { doc.status = text.trim(); continue; }
+      push({ type: 'p', text });
+    }
+    return { doc, sections: sections.filter((s) => s.opener || s.blocks.length) };
+  }
+
+  // ---------- blocks ----------
+  const LC = { spec: 'var(--l-spec)', prod: 'var(--l-prod)', tech: 'var(--l-tech)', code: 'var(--l-code)' };
+  const KIND = { T: 'spec', A: 'spec', R: 'spec', W: 'spec', E: 'spec', F: 'prod', D: 'tech' };
+
+  // ---------- skopo samples ----------
+  // A ```skopo block holds excerpts of one or more skopository files. Each excerpt starts with a
+  // line "<layer> · <path>", where the layer is spec, product binding, tech binding, rationale or
+  // view. The block shows the files rendered, with a switch to their Markdown source.
+  const SKOPO_HEAD = /^\s*(spec|product binding|tech binding|rationale|view)\s*(?:[·•]\s*(\S.*?))?\s*[：:]?\s*$/i;
+  const HEAD_COLOR = { spec: 'var(--l-spec)', 'product binding': 'var(--l-prod)', 'tech binding': 'var(--l-tech)', rationale: 'var(--ink4)', view: 'var(--ink4)' };
+  // Bold words that carry force; any other bold word (a defined term) is shown as plain bold.
+  const KEYWORDS = new Set(['must', 'must not', 'may', 'Where', '应', '不应', '可', '凡采用']);
+  const ID = '[A-Z]-[a-z0-9]{6}';
+
+  // Inline Markdown inside a skopository file: code, bold, italic, anchors, link groups and IDs.
+  const skopoInline = (s) => {
+    const re = new RegExp(`(\`([^\`]+)\`)|(\\*\\*([^*]+)\\*\\*)|(\\*([^*\\s][^*]*?)\\*)|(\\^([A-Z])-([a-z0-9]{6}))|(\\((?:refines\\s+)?${ID}(?:,\\s*${ID})*\\))|(\\b${ID}\\b)`, 'g');
+    const out = []; let last = 0, m;
+    while ((m = re.exec(s))) {
+      if (m.index > last) out.push(s.slice(last, m.index));
+      if (m[1]) out.push(el('code', {}, m[2]));
+      else if (m[3]) out.push(el('strong', KEYWORDS.has(m[4]) ? { class: 'kw' } : {}, m[4]));
+      else if (m[5]) out.push(el('em', {}, m[6]));
+      else if (m[7]) out.push(el('span', { class: 'anc' }, '^', el('b', { style: `color:${LC[KIND[m[8]] || 'spec']}` }, m[8]), '-' + m[9]));
+      else if (m[10]) out.push(el('span', { class: 'ref' }, m[10]));
+      else out.push(el('span', { class: 'id' }, m[11]));
+      last = re.lastIndex;
+    }
+    if (last < s.length) out.push(s.slice(last));
+    return out;
+  };
+
+  function skopoFiles(lines) {
+    const files = []; let cur = null;
+    for (const raw of lines) {
+      const h = raw.match(SKOPO_HEAD);
+      if (h) { cur = { layer: h[1].toLowerCase(), path: h[2] || '', lines: [] }; files.push(cur); continue; }
+      if (!cur) { cur = { layer: 'spec', path: '', lines: [] }; files.push(cur); }
+      cur.lines.push(raw);
+    }
+    for (const f of files) {
+      while (f.lines.length && !f.lines[0].trim()) f.lines.shift();
+      while (f.lines.length && !f.lines[f.lines.length - 1].trim()) f.lines.pop();
+    }
+    return files;
+  }
+
+  // Block Markdown inside a skopository file: headings, tables, quotes, list items, paragraphs.
+  function skopoMarkdown(lines) {
+    const out = []; let i = 0;
+    const item = /^\s*([-*]|\d+\.)\s+/;
+    const starts = /^(#{1,6}\s|>|\|)/;
+    while (i < lines.length) {
+      const l = lines[i];
+      if (!l.trim()) { i++; continue; }
+      if (/^#{1,6}\s/.test(l)) { out.push(el('div', { class: 'sk-h' }, skopoInline(l.replace(/^#+\s*/, '')))); i++; continue; }
+      if (l.startsWith('|')) {
+        const rows = []; while (i < lines.length && lines[i].startsWith('|')) rows.push(lines[i++]);
+        const body = rows.filter((r) => !/^\|[\s:|-]+\|?\s*$/.test(r)).map(tableCells);
+        // The first row is the header; an empty one (| | |, as rationale records use) is not shown.
+        const first = body.shift() || [];
+        const head = first.some((c) => c) ? first : null;
+        out.push(el('table', {}, head ? el('thead', {}, el('tr', {}, head.map((c) => el('th', {}, skopoInline(c))))) : null,
+          el('tbody', {}, body.map((r) => el('tr', {}, r.map((c) => el('td', {}, skopoInline(c))))))));
+        continue;
+      }
+      if (l.startsWith('>')) {
+        const buf = []; while (i < lines.length && lines[i].startsWith('>')) buf.push(lines[i++].replace(/^>\s?/, ''));
+        out.push(el('blockquote', {}, skopoInline(buf.join(' '))));
+        continue;
+      }
+      if (item.test(l)) {
+        const items = [];
+        while (i < lines.length && (item.test(lines[i]) || (items.length && /^\s{2,}\S/.test(lines[i])))) {
+          if (item.test(lines[i])) items.push(lines[i].replace(item, ''));
+          else items[items.length - 1] += ' ' + lines[i].trim();
+          i++;
+        }
+        out.push(el('ul', {}, items.map((t) => el('li', {}, skopoInline(t)))));
+        continue;
+      }
+      const buf = []; while (i < lines.length && lines[i].trim() && !starts.test(lines[i]) && !item.test(lines[i])) buf.push(lines[i++].trim());
+      out.push(el('p', {}, skopoInline(buf.join(' '))));
+    }
+    return out;
+  }
+
+  function skopoBlock(lines) {
+    const files = skopoFiles(lines);
+    const box = el('div', { class: 'skopo keep', 'data-view': 'rendered' });
+    // One switch: lit, the block shows the Markdown source; unlit, the rendered files.
+    const raw = el('button', { type: 'button', 'aria-pressed': 'false', title: UI.raw, onclick: () => {
+      const on = box.dataset.view !== 'source';
+      box.dataset.view = on ? 'source' : 'rendered';
+      raw.setAttribute('aria-pressed', String(on));
+    } }, 'Raw');
+    const label = (f) => el('div', { class: 'sk-file' }, el('span', { class: 'sk-layer', style: `color:${HEAD_COLOR[f.layer]}` }, f.layer), f.path ? el('span', { class: 'sk-path' }, f.path) : null);
+    const section = (f, body) => el('div', { class: 'sk-sec', style: `border-left-color:${HEAD_COLOR[f.layer]}` }, label(f), body);
+    box.append(
+      el('div', { class: 'sk-bar' }, raw),
+      el('div', { class: 'sk-rendered' }, files.map((f) => section(f, skopoMarkdown(f.lines)))),
+      el('div', { class: 'sk-source' }, files.map((f) => section(f, el('pre', {}, f.lines.join('\n'))))));
+    return box;
+  }
+
+  function tableBlock(b) {
+    return el('div', { class: 'tbl keep' }, el('table', {},
+      el('thead', {}, el('tr', {}, b.head.map((c) => el('th', {}, inline(c))))),
+      el('tbody', {}, b.rows.map((r) => el('tr', {}, r.map((c) => el('td', {}, inline(c))))))));
+  }
+
+  function block(b, sec) {
+    switch (b.type) {
+      case 'h3': return el('h3', {}, b.num ? el('span', { class: 'num' }, b.num) : null, el('span', {}, inline(b.text)));
+      case 'p': return el('p', { class: 'body' }, inline(b.text));
+      case 'ul': return el('ul', { class: 'body' }, b.items.map((t) => el('li', {}, inline(t))));
+      case 'ol': return el('ol', { class: 'body' }, b.items.map((t) => el('li', {}, inline(t))));
+      case 'quote': return el('blockquote', { class: 'pull keep' }, el('div', { class: 'bar' }), el('p', {}, inline(b.text)));
+      case 'bq': return el('blockquote', { class: 'bq' }, inline(b.text));
+      case 'stats': return el('div', { class: 'stats keep' }, b.items.map((s) => el('div', { class: 'stat' },
+        el('div', { class: 'v' }, el('span', { class: 'pre' }, s.pre), el('span', { class: 'num' }, s.num), el('span', { class: 'unit' }, s.unit)),
+        el('div', { class: 'lab' }, s.label))));
+      case 'bet': return el('aside', { class: 'bet keep' }, el('div', { class: 'label-caps' }, UI.bet), b.paras.map((p) => el('p', {}, inline(p))));
+      case 'note': return el('aside', { class: 'note' }, b.paras.map((p) => el('p', {}, inline(p))));
+      case 'skopo': return skopoBlock(b.lines);
+      case 'code': return el('pre', { class: 'code keep' }, b.lines.join('\n'));
+      case 'table': return b.drawn ? null : tableBlock(b);
+      case 'figure': return figureBlock(b, sec);
+      default: return null;
+    }
+  }
+
+  // ---------- figures ----------
+  // Figures take their words from the Markdown: from the table they illustrate, or from the quoted
+  // labels in their [!FIGURE] specification. Keep the order of quoted labels when editing a spec.
+  const FIGURES = { ladder: figLadder, spectrum: figSpectrum, law: figLaw, layers: figLayers, statement: figStatement, lifespan: figLifespan, loop: figLoop };
+
+  function figureBlock(b, sec) {
+    const key = b.id.replace(/^fig-/, '');
+    let body;
+    try { body = FIGURES[key] ? FIGURES[key](b, sec) : null; } catch (e) { console.error(`${b.id}:`, e); body = null; }
+    return el('figure', { class: 'fig keep' },
+      el('div', { class: 'figpanel' }, el('div', {}, body || el('div', { class: 'fig-pending' }, `${b.id} · ${UI.pending}`))),
+      el('figcaption', {}, el('span', { class: 'id' }, b.id), el('span', { class: 't' }, b.title)));
+  }
+  const specLine = (b, re) => b.spec.find((l) => re.test(l)) || '';
+  const tableBefore = (b, sec) => { const k = sec.blocks.indexOf(b); return sec.blocks.slice(0, k).reverse().find((x) => x.type === 'table'); };
+  const dashedArrow = (dir) => svg(dir === 'down'
+    ? '<svg width="10" height="40" viewBox="0 0 10 40"><path d="M5 2V37M1 33l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="3 3"/></svg>'
+    : '<svg width="10" height="40" viewBox="0 0 10 40"><path d="M5 38V3M1 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="3 3"/></svg>');
+
+  function figLadder(b, sec) {
+    const t = tableBefore(b, sec);
+    const rows = t.rows.map((r) => ({ name: plain(r[0]), freed: plain(r[1] || ''), via: plain(r[2] || '') }));
+    const blank = (s) => (/^[（(].*[）)]$/.test(s) || /^[—–-]$/.test(s) ? '' : s);
+    const top = rows[rows.length - 1];
+    const rungs = rows.slice(0, -1).reverse();
+    const failed = (specLine(b, /横档|rungs/).split(/[：:]/)[1] || '').split(/[。.]/)[0].split(/[、,，]/).map((x) => x.trim()).filter(Boolean);
+    const cellL = (txt, h) => el('div', { style: `height:${h}px;display:flex;align-items:center;justify-content:flex-end;text-align:right;font-size:13px;line-height:1.35;color:var(--ink2)` }, txt);
+    const grid = el('div', { style: 'display:grid;grid-template-columns:minmax(0,1fr) 200px minmax(0,1fr);column-gap:18px;flex:1 1 auto;max-width:640px' },
+      el('div', { style: 'height:30px;font-size:12px;color:var(--ink3);text-align:right' }, plain(t.head[1])), el('div'), el('div', { style: 'height:30px;font-size:12px;color:var(--ink3)' }, plain(t.head[2])),
+      cellL(blank(top.freed), 44),
+      el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);border-radius:8px;font-size:15px;font-weight:600' }, top.name.replace(/[，,]\s*(这一级|this rung)/, '')),
+      el('div'),
+      el('div'), el('div', { style: 'height:40px;display:flex;justify-content:center;gap:14px;color:var(--ink)' }, dashedArrow('down'), dashedArrow('up')),
+      el('div', { style: 'height:40px;display:flex;align-items:center;font-family:var(--mono);font-size:12px;color:var(--ink)' }, blank(top.via)),
+      rungs.map((r, k) => [
+        cellL(blank(r.freed), 44),
+        el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2);background:var(--bg);border-radius:8px;font-size:15px;font-weight:500' }, r.name),
+        el('div'),
+        k < rungs.length - 1 ? [el('div'),
+          el('div', { style: 'height:36px;display:flex;justify-content:center;color:var(--ink3)' }, svg('<svg width="10" height="36" viewBox="0 0 10 36"><path d="M5 2V33M1 29l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')),
+          el('div', { style: 'height:36px;display:flex;align-items:center;font-family:var(--mono);font-size:12px;color:var(--ink2)' }, blank(rungs[k].via))] : null,
+      ]));
+    const broken = el('div', { style: 'flex:0 0 170px;padding-top:30px;display:flex;flex-direction:column;gap:10px;opacity:.5' },
+      el('div', { style: 'margin-left:10px;height:18px;border-left:1px dashed var(--ink3)' }),
+      [...failed].reverse().map((name, k) => el('div', { style: `margin-left:${k * 20}px;width:110px;height:34px;box-sizing:border-box;display:flex;align-items:center;padding-left:10px;border:1px dashed var(--ink3);border-right:none;border-bottom:none;font-family:var(--mono);font-size:12px;color:var(--ink2)` }, name)));
+    return el('div', { style: 'display:flex;gap:28px;justify-content:center;align-items:flex-start' }, grid, broken);
+  }
+
+  function figSpectrum(b, sec) {
+    const t = tableBefore(b, sec);
+    const cols = t.head.slice(1).map(plain);
+    const isSkopo = (r) => /skopo/i.test(r[0]);
+    const mark = (v) => (/^✓/.test(v) ? 'on' : /^✗/.test(v) ? 'off' : 'dash');
+    const dot = (k) => k === 'on' ? el('span', { style: 'width:10px;height:10px;border-radius:50%;background:var(--ink)' })
+      : k === 'off' ? el('span', { style: 'width:10px;height:10px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--ink3)' })
+        : el('span', { style: 'width:12px;height:1.5px;background:var(--ink3)' });
+    const ends = (b.spec.join(' ').match(/从(.+?)到(.+?)的顺序/) || b.spec.join(' ').match(/in order from (.+?) to (.+?)[,;.]/i) || []);
+    const from = ends[1] || UI.from, to = ends[2] || UI.to;
+    const skopoLine = specLine(b, /这一行|row on its own/i);
+    const skopoSub = labelled([skopoLine])[0] || '';
+    const gridCols = `220px repeat(${cols.length},minmax(0,1fr))`;
+    const others = t.rows.filter((r) => !isSkopo(r));
+    const sk = t.rows.find(isSkopo);
+    const matrix = el('div', { style: `display:grid;grid-template-columns:${gridCols};column-gap:4px;align-items:end` },
+      el('div', { style: 'height:100px;grid-column:1;display:flex;align-items:flex-end;padding-bottom:10px;font-size:12px;font-weight:600;color:var(--ink)' }, `${from} ↓`),
+      cols.map((c) => el('div', { style: 'height:100px;display:flex;align-items:flex-end;justify-content:center;text-align:center;padding-bottom:10px;font-size:12px;line-height:1.35;color:var(--ink2);text-wrap:balance' }, c)),
+      others.map((r) => [
+        el('div', { style: 'height:46px;display:flex;align-items:center;padding-left:16px;border-top:1px solid var(--line);font-size:14px;font-weight:500;color:var(--ink);position:relative' },
+          el('span', { style: 'position:absolute;left:0;top:-1px;bottom:-1px;width:1px;background:var(--ink3)' }), el('span', { style: 'position:absolute;left:0;top:50%;width:6px;height:1px;background:var(--ink3)' }), plain(r[0])),
+        r.slice(1).map((v) => el('div', { style: 'height:46px;display:flex;align-items:center;justify-content:center;border-top:1px solid var(--line)' }, dot(mark(v)))),
+      ]),
+      el('div', { style: 'grid-column:1;height:30px;display:flex;align-items:center;font-size:12px;font-weight:600;color:var(--ink);border-top:1px solid var(--line)' }, `${to} ↑`),
+      el('div', { style: 'grid-column:2 / -1;border-top:1px solid var(--line)' }));
+    const skopoRow = sk ? el('div', { style: `display:grid;grid-template-columns:${gridCols};column-gap:4px;margin-top:28px;border:1px dashed var(--ink);background:var(--bg);border-radius:8px;padding:4px 0` },
+      el('div', { style: 'height:60px;display:flex;flex-direction:column;justify-content:center;padding-left:16px;gap:2px' },
+        el('span', { style: 'font-size:14px;font-weight:600;color:var(--ink)' }, plain(sk[0])), skopoSub ? el('span', { style: 'font-size:11.5px;color:var(--ink2)' }, skopoSub) : null),
+      sk.slice(1).map((v) => el('div', { style: 'height:60px;display:flex;align-items:center;justify-content:center' }, dot(mark(v))))) : null;
+    return el('div', { style: 'max-width:880px;margin:0 auto' }, matrix, skopoRow);
+  }
+
+  function figLaw(b) {
+    const line = specLine(b, /↔/);
+    const pairs = line.replace(/^[^：:]*每行一对[：:]/, '').replace(/^[^：:]*[：:]\s*(?=\S+\s*↔)/, '').split(/[；;]/).map((x) => x.trim().replace(/[。.]$/, '')).filter((x) => x.includes('↔'));
+    const heads = quoted(specLine(b, /两栏|two columns/i));
+    const rows = pairs.map((p) => {
+      const [l, r] = p.split('↔').map((x) => x.trim());
+      const paren = r.match(/^(.*?)[（(](.+)[）)]$/);
+      if (paren) return { l, r: paren[1].trim(), sub: paren[2].trim() };
+      const comma = r.indexOf('，') >= 0 ? r.indexOf('，') : r.indexOf(', ');
+      return comma > 0 ? { l, r: r.slice(0, comma).trim(), sub: r.slice(comma + 1).trim() } : { l, r, sub: '' };
+    });
+    return el('div', { style: 'display:grid;grid-template-columns:minmax(0,1fr) 110px minmax(0,1.3fr);max-width:760px;margin:0 auto' },
+      el('div', { style: 'text-align:right;font-size:14px;font-weight:600;padding-bottom:12px;border-bottom:1px solid var(--ink)' }, heads[0] || ''),
+      el('div', { style: 'border-bottom:1px solid var(--ink)' }),
+      el('div', { style: 'font-size:14px;font-weight:600;padding-bottom:12px;border-bottom:1px solid var(--ink);color:var(--ink)' }, heads[1] || 'Skopo'),
+      rows.map((r) => [
+        el('div', { style: 'padding:13px 0;text-align:right;font-size:15px;line-height:1.5;border-bottom:1px solid var(--line)' }, r.l),
+        el('div', { style: 'display:flex;align-items:center;padding:0 12px;border-bottom:1px solid var(--line);color:var(--ink4)' },
+          el('span', { style: 'width:5px;height:5px;border-radius:50%;background:currentColor;flex:none' }), el('span', { style: 'flex:1;height:1px;background:currentColor' }), el('span', { style: 'width:5px;height:5px;border-radius:50%;background:currentColor;flex:none' })),
+        el('div', { style: 'padding:13px 0;font-size:15px;line-height:1.5;border-bottom:1px solid var(--line)' }, el('div', {}, r.r), r.sub ? el('div', { style: 'font-size:13px;color:var(--ink3);margin-top:2px' }, r.sub) : null),
+      ]));
+  }
+
+  function figLayers(b, sec) {
+    // The layer descriptions are the first clause of each bullet in this section's list of layers.
+    const list = sec.blocks.find((x) => x.type === 'ul' && x.items.some((it) => /^\*\*(spec|product binding|tech binding)\*\*/.test(it)));
+    const desc = {};
+    for (const it of list ? list.items : []) {
+      const m = it.match(/^\*\*([^*]+)\*\*[：:]\s*(.*)$/);
+      if (m) desc[m[1]] = plain(m[2]).split(/。|，比如|：|; |, such as|: |\. /)[0].replace(/[。.]$/, '');
+    }
+    const q = labelled(b.spec); // [code note, gate 1, gate 2, gate 3, up, crossed]
+    const [codeNote, g1, g2, g3, up, cross] = [q[0], q[1], q[2], q[3], q[4], q[5]];
+    const band = (row, name, layer, text, dashed) => el('div', { style: `grid-column:1;grid-row:${row};display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:baseline;padding:18px 22px;border-radius:8px;${dashed ? 'border:1px dashed var(--l-code);background:var(--l-code-f)' : `background:var(--l-${layer}-f);border-left:4px solid var(--l-${layer})`}` },
+      el('span', { style: `font-family:var(--mono);font-size:13px;font-weight:700;color:${dashed ? 'var(--ink3)' : 'var(--ink)'}` }, name),
+      el('span', { style: `font-size:14px;line-height:1.55;${dashed ? 'color:var(--ink3)' : ''}` }, text));
+    const gate = (row, label) => el('div', { style: `grid-column:1;grid-row:${row};height:44px;display:flex;align-items:center;gap:10px;padding-left:22px` },
+      el('span', { style: 'font-family:var(--mono);font-size:12px;color:var(--ink2);background:var(--bg);border:1px solid var(--ink3);border-radius:999px;padding:3px 12px;white-space:nowrap' }, label),
+      el('span', { style: 'flex:1;border-top:1px dashed var(--line2)' }));
+    return el('div', { style: 'display:grid;grid-template-columns:minmax(0,1fr) 120px 150px;max-width:860px;margin:0 auto' },
+      band(1, 'spec', 'spec', desc['spec'] || ''), gate(2, g1),
+      band(3, 'product binding', 'prod', desc['product binding'] || ''), gate(4, g2),
+      band(5, 'tech binding', 'tech', desc['tech binding'] || ''), gate(6, g3),
+      band(7, 'code', 'code', codeNote, true),
+      el('div', { style: 'grid-column:2;grid-row:1 / 6;display:flex;gap:10px;align-items:stretch;padding:8px 0 8px 22px;color:var(--ink2)' },
+        el('div', { style: 'display:flex;flex-direction:column;align-items:center;width:10px' }, svg('<svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 7l4-5 4 5" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>'), el('span', { style: 'flex:1;width:1.25px;background:currentColor;margin-top:-6px' })),
+        el('div', { style: 'align-self:center;font-size:13px;line-height:1.5' }, up)),
+      el('div', { style: 'grid-column:3;grid-row:5 / 8;display:flex;gap:10px;align-items:stretch;padding:22px 0 22px 12px;color:var(--ink3)' },
+        el('div', { style: 'display:flex;flex-direction:column;align-items:center;width:16px' }, el('span', { style: 'flex:1;width:1.25px;background:currentColor' }),
+          svg('<svg width="16" height="16" viewBox="0 0 16 16" style="margin:4px 0;color:var(--ink)"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>'),
+          el('span', { style: 'flex:1;width:1.25px;background:currentColor' }), svg('<svg width="10" height="8" viewBox="0 0 10 8" style="margin-top:-6px"><path d="M1 1l4 5 4-5" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')),
+        el('div', { style: 'align-self:center;font-size:13px;line-height:1.5;color:var(--ink2)' }, cross)));
+  }
+
+  function figStatement(b) {
+    const codes = b.spec.flatMap((l) => [...l.matchAll(/`([^`]+)`/g)].map((m) => m[1]));
+    const main = codes.find((c) => /\*\*/.test(c)) || '';
+    const ex = codes.find((c) => /Example|例/.test(c)) || '';
+    const labels = (specLine(b, /标出[：:]|Label/).split(/[：:]/)[1] || '').split(/[。]|\.\s*$/)[0].split(/、|, /).map((x) => x.trim());
+    const exLabel = quoted(specLine(b, /括号|parentheses/))[0] || '';
+    const mm = main.match(/^(.*?)\*\*([^*]+)\*\*(.*?)\^([A-Z])-([a-z0-9]+)\s*$/);
+    const ann = (txt, extra) => el('span', { style: `position:absolute;font-family:var(--sans);font-size:13px;font-weight:400;line-height:1.4;color:var(--ink2);white-space:nowrap;${extra}` }, txt);
+    const tick = (h) => el('span', { style: `position:absolute;left:50%;top:calc(100% + 8px);width:1px;height:${h}px;background:var(--ink3)` });
+    // The statement stays on one line, so a long one (English runs longer than Chinese) is set smaller.
+    const ems = [...main].reduce((w, c) => w + (c > '\u2e80' ? 1 : 0.6), 0);
+    const size = Math.max(11, Math.min(16, Math.floor(760 / Math.max(ems, 1))));
+    const mainNode = mm ? el('div', { style: `position:relative;padding:92px 0 104px;font-family:var(--mono);font-size:${size}px;line-height:1;white-space:pre;color:var(--ink)` },
+      el('div', { style: 'position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center' },
+        el('span', { style: 'font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--ink2);margin-bottom:6px;white-space:nowrap' }, labels[0] || ''),
+        el('span', { style: 'align-self:stretch;height:8px;border:1px solid var(--ink3);border-bottom:none' })),
+      el('span', {}, mm[1]),
+      el('span', { style: 'position:relative;color:var(--accent);font-weight:700' }, `**${mm[2]}**`, tick(22), ann(labels[1] || '', 'left:50%;top:calc(100% + 34px);transform:translateX(-50%)')),
+      el('span', {}, mm[3]),
+      el('span', { style: 'position:relative' },
+        el('span', { style: 'position:absolute;left:0;right:0;bottom:calc(100% + 10px);display:flex;flex-direction:column;align-items:center' },
+          el('span', { style: 'font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--ink2);margin-bottom:5px' }, labels[2] || ''),
+          el('span', { style: 'align-self:stretch;height:7px;border:1px solid var(--ink3);border-bottom:none' })),
+        el('span', { style: 'color:var(--ink3)' }, '^'),
+        el('span', { style: 'position:relative;color:var(--ink);font-weight:700' }, mm[4], tick(22), ann(labels[3] || '', 'right:50%;top:calc(100% + 34px)')),
+        el('span', { style: 'color:var(--ink3)' }, '-'),
+        el('span', { style: 'position:relative;color:var(--ink2)' }, mm[5], tick(56), ann(labels[4] || '', 'left:50%;top:calc(100% + 68px);transform:translateX(-75%)')))) : null;
+    const em = ex.match(/^>\s*(\*Example\.\*|\*例\*[：:]|\*例\.\*)?\s*(.*?)\s*\^([A-Z])-([a-z0-9]+)\s*(\([^)]*\))?\s*$/);
+    const exNode = em ? el('div', { style: 'position:relative;max-width:640px;padding:8px 0 64px;font-family:var(--mono);font-size:14px;line-height:1.7;color:var(--ink);text-align:left' },
+      el('span', { style: 'color:var(--ink3)' }, '> '), em[1] ? el('em', {}, em[1].replace(/\*/g, '')) : null, ` ${em[2]} `,
+      el('span', { style: 'color:var(--ink3)' }, '^'), el('span', { style: 'color:var(--ink);font-weight:700' }, em[3]), el('span', { style: 'color:var(--ink3)' }, '-'), el('span', { style: 'color:var(--ink2)' }, em[4]), ' ',
+      em[5] ? el('span', { style: 'position:relative;display:inline-block;color:var(--ink4);white-space:nowrap' }, em[5],
+        el('span', { style: 'position:absolute;left:0;right:0;top:calc(100% + 4px);height:7px;border:1px solid var(--ink3);border-top:none' }),
+        ann(exLabel, 'left:50%;top:calc(100% + 18px);transform:translateX(-50%)')) : null) : null;
+    // safe center: on a narrow screen the statement overflows to the right, where it can be scrolled to.
+    return el('div', { style: 'display:flex;flex-direction:column;align-items:safe center;gap:8px' }, mainNode, exNode);
+  }
+
+  function figLifespan(b) {
+    const q = b.spec.flatMap(quoted); // [today, long term, form, form marker, content, code, code marker, end]
+    const [today, longTerm, form, formMark, content, code, codeMark, end] = q;
+    const lab = (t) => el('div', { style: 'font-size:13px;color:var(--ink2);margin-bottom:8px;text-wrap:pretty' }, t);
+    return el('div', { style: 'max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:30px' },
+      el('div', {}, lab(form), el('div', { style: 'position:relative;height:14px;border-radius:3px;background:linear-gradient(90deg,var(--ink4) 0%,var(--ink4) 16%,transparent 36%)' },
+        el('span', { style: 'position:absolute;left:26%;top:-4px;bottom:-4px;width:1px;background:var(--ink3)' }),
+        el('span', { style: 'position:absolute;left:26%;top:calc(100% + 8px);transform:translateX(-50%);font-size:12px;color:var(--ink2);white-space:nowrap' }, formMark))),
+      el('div', { style: 'margin-top:14px' }, lab(content), el('div', { style: 'height:14px;border-radius:3px;background:var(--accent)' })),
+      el('div', {}, el('div', { style: 'display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-bottom:8px' }, el('span', {}, code), el('span', { style: 'font-family:var(--mono);font-size:12px' }, end)),
+        el('div', { style: 'position:relative;height:14px;border-radius:3px;background:linear-gradient(90deg,var(--l-code) 0%,var(--l-code) 14%,transparent 96%)' },
+          el('span', { style: 'position:absolute;left:14%;top:-4px;bottom:-4px;width:1px;background:var(--ink3)' }),
+          el('span', { style: 'position:absolute;left:0;top:calc(100% + 8px);font-size:12px;color:var(--ink2);white-space:nowrap' }, codeMark))),
+      el('div', { style: 'margin-top:10px' }, el('div', { style: 'display:flex;align-items:center;color:var(--ink3)' }, el('span', { style: 'flex:1;height:1px;background:currentColor' }),
+        svg('<svg width="8" height="10" viewBox="0 0 8 10" style="margin-left:-2px"><path d="M1 1l6 4-6 4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')),
+      el('div', { style: 'display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--ink3)' }, el('span', {}, today), el('span', {}, longTerm))));
+  }
+
+  function figLoop(b) {
+    const sides = specLine(b, /左边|left/i).match(/左边是\s*(.+?)[，,]\s*右边是\s*(.+?)[。.]/) || specLine(b, /left/i).match(/left:\s*(.+?);\s*right:\s*(.+?)\./i) || [];
+    const left = sides[1] || 'skopo', right = sides[2] || 'code';
+    const top = quoted(specLine(b, /上方|above/i)); // [recover, backstop]
+    const stepsLine = specLine(b, /→/).replace(/^[^：:]*[：:]\s*/, '').replace(/[。.]\s*$/, '');
+    const hookLine = specLine(b, /虚线|dashed/i);
+    const hq = quoted(hookLine); // [not yet built, note 1, note 2]
+    const steps = stepsLine.split('→').map((s) => s.trim()).filter(Boolean).map((s) => {
+      const m = s.match(/^(.*?)[（(](.+)[）)]$/);
+      const t = plain(m ? m[1].trim() : s), sub = m ? plain(m[2]).replace(/[“”]/g, '"') : '';
+      return { t, sub, todo: /hook/i.test(t) && hq.length > 0, person: /^人|^people/i.test(t) };
+    });
+    const box = (txt, solid) => el('div', { style: `height:96px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:16px;${solid ? 'border:1px solid var(--ink);background:var(--l-spec-f);font-family:var(--mono);font-weight:700;color:var(--ink)' : 'border:1px dashed var(--l-code);background:var(--l-code-f);font-weight:500;color:var(--ink3)'}` }, txt);
+    const leftArrow = (w, c) => el('div', { style: `display:flex;align-items:center;color:${c}` }, svg(`<svg width="8" height="10" viewBox="0 0 8 10" style="margin-right:-2px"><path d="M7 1L1 5l6 4" fill="none" stroke="currentColor" stroke-width="${w}"/></svg>`), el('span', { style: `flex:1;height:${w}px;background:currentColor` }));
+    return el('div', { style: 'max-width:900px;margin:0 auto' },
+      el('div', { style: 'display:grid;grid-template-columns:170px minmax(0,1fr) 170px;align-items:center' },
+        box(left, true),
+        el('div', { style: 'padding:0 16px;display:flex;flex-direction:column;align-items:stretch;gap:6px' },
+          el('div', { style: 'text-align:center;font-size:13px;line-height:1.45;color:var(--ink2)' }, top[0] || ''), leftArrow(1.25, 'var(--ink2)'),
+          top[1] ? el('div', { style: 'margin-top:4px' }, leftArrow(1, 'var(--ink4)')) : null,
+          top[1] ? el('div', { style: 'text-align:center;font-size:12px;line-height:1.45;color:var(--ink3)' }, top[1]) : null),
+        box(right, false)),
+      el('div', { style: 'display:flex;justify-content:space-between;padding:0 60px;height:44px;color:var(--ink3)' },
+        svg('<svg width="10" height="44" viewBox="0 0 10 44"><path d="M5 42V3M1 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>'),
+        svg('<svg width="10" height="44" viewBox="0 0 10 44"><path d="M5 2V41M1 37l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')),
+      el('div', { style: 'display:flex;flex-direction:row-reverse;align-items:stretch;padding-bottom:84px;max-width:960px;margin:0 auto' },
+        steps.map((s, k) => [
+          el('div', { style: `position:relative;flex:${s.person ? 1.5 : 1} 1 0;min-width:0;box-sizing:border-box;border:1px ${s.todo ? 'dashed' : 'solid'} ${s.person ? 'var(--accent)' : s.todo ? 'var(--ink3)' : 'var(--line2)'};background:var(--bg);border-radius:8px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px` },
+            s.person ? el('span', { style: 'position:absolute;left:50%;top:-11px;transform:translateX(-50%);font-size:11px;line-height:1;font-weight:600;color:#FFFFFF;background:var(--accent);border-radius:999px;padding:5px 10px' }, UI.person) : null,
+            s.todo ? el('span', { style: 'position:absolute;left:50%;top:-10px;transform:translateX(-50%);font-size:11px;line-height:1;font-weight:500;color:var(--ink2);background:var(--panel);border:1px dashed var(--ink3);border-radius:999px;padding:4px 9px;white-space:nowrap' }, hq[0]) : null,
+            el('span', { style: 'font-size:13.5px;line-height:1.4;font-weight:500' }, s.t),
+            s.sub ? el('span', { style: 'font-size:12px;line-height:1.45;color:var(--ink2)' }, s.sub) : null,
+            s.todo && hq.length > 1 ? el('span', { style: 'position:absolute;left:0;right:-110px;top:calc(100% + 10px);display:flex;flex-direction:column;gap:2px;text-align:left;font-size:12px;line-height:1.45;color:var(--ink2);border-left:1px solid var(--ink3);padding-left:8px;white-space:nowrap' }, hq.slice(1).map((x) => el('span', {}, x))) : null),
+          k < steps.length - 1 ? el('div', { style: 'flex:0 0 22px;display:flex;align-items:center;justify-content:center;color:var(--ink3)' }, svg('<svg width="16" height="10" viewBox="0 0 16 10"><path d="M15 5H2M6 1L2 5l4 4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')) : null,
+        ])));
+  }
+
+  // ---------- page ----------
+  const root = document.getElementById('app');
+  let theme = params.get('theme') || 'light';
+  if (theme === 'system') theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+  // Figures that draw a whole table (the ladder, the matrix) replace it on the page.
+  const DRAWS_TABLE = new Set(['ladder', 'spectrum']);
+
+  function render(md) {
+    const { doc, sections } = parse(md);
+    for (const sec of sections) for (const b of sec.blocks) {
+      if (b.type !== 'figure' || !DRAWS_TABLE.has(b.id.replace(/^fig-/, ''))) continue;
+      const t = tableBefore(b, sec);
+      if (t) t.drawn = true;
+    }
+    document.title = plain(doc.title) || document.title;
+    root.setAttribute('lang', LANG);
+    document.documentElement.lang = LANG;
+    root.dataset.theme = theme;
+    const toc = sections.filter((s) => s.opener);
+    const tocLinks = (cls) => toc.map((s) => el('a', { href: `#${s.id}`, 'data-sec': s.id, class: cls }, el('span', { class: 'n' }, s.num), el('span', {}, s.title)));
+    const btn = el('button', { class: 'theme-btn', onclick: () => { theme = theme === 'dark' ? 'light' : 'dark'; root.dataset.theme = theme; btn.textContent = theme === 'dark' ? UI.light : UI.dark; } }, theme === 'dark' ? UI.light : UI.dark);
+    const other = OFFERED.find((l) => l !== LANG);
+    const langBtn = other ? el('button', { class: 'theme-btn', lang: other, title: UI.otherTitle, onclick: () => switchLang(other) }, UI.other) : null;
+    const side = el('aside', { class: 'side' }, el('div', { class: 'label-caps' }, UI.toc), el('div', { class: 'doc-title' }, doc.title), el('nav', {}, tocLinks('')));
+    const cover = doc.title ? el('header', { class: 'cover' },
+      doc.status ? el('div', { class: 'status' }, inline(doc.status)) : null,
+      el('h1', {}, doc.title),
+      doc.subtitle ? el('p', { class: 'subtitle' }, doc.subtitle) : null,
+      el('nav', { class: 'inline-toc' }, el('div', { class: 'label-caps' }, UI.toc), tocLinks(''))) : null;
+    const body = sections.map((sec) => el('section', { id: sec.id },
+      sec.opener ? el('div', { class: 'opener' }, sec.num ? el('div', { class: 'num' }, sec.num) : null, el('h2', {}, sec.title)) : null,
+      sec.blocks.map((b) => block(b, sec))));
+    root.replaceChildren(el('div', { class: 'top-btns' }, langBtn, btn), el('div', { class: 'shell' }, side, el('main', {}, cover, body)));
+    onScroll();
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+  }
+
+  // The section at the top of the window, so a change of language can return to it.
+  const activeSection = () => {
+    let active = null;
+    document.querySelectorAll('[data-skopo] section[id]').forEach((s) => { if (s.getBoundingClientRect().top < 160) active = s.id; });
+    return active;
+  };
+  const onScroll = () => {
+    const active = activeSection();
+    document.querySelectorAll('.side a').forEach((a) => a.classList.toggle('active', a.dataset.sec === active));
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  function switchLang(lang) {
+    const at = activeSection();
+    LANG = lang;
+    UI = UIS[lang];
+    store(lang);
+    const q = new URLSearchParams(location.search);
+    q.set('lang', lang);
+    // A page opened from disk may refuse a new address; the choice is stored either way.
+    try { history.replaceState(null, '', `${location.pathname}?${q}${at ? `#${at}` : ''}`); } catch { /* keep the address */ }
+    load();
+    if (at) document.getElementById(at)?.scrollIntoView();
+  }
+
+  function fail(why) {
+    const other = OFFERED.find((l) => l !== LANG);
+    root.replaceChildren(other ? el('div', { class: 'top-btns' }, el('button', { class: 'theme-btn', lang: other, onclick: () => switchLang(other) }, UI.other)) : '', el('div', { class: 'loading' },
+      el('p', {}, `Could not read ${LANG}.md: ${why}`),
+      el('p', {}, 'The copy on GitHub can be read only while the repository is public.'),
+      el('p', {}, 'Serve this directory (', el('code', {}, 'python3 -m http.server'), ') and open it over http, or build a self-contained copy with ', el('code', {}, `node build.mjs ${LANG}`), '.'),
+      el('p', {}, 'Or choose the Markdown file: ', el('input', { type: 'file', accept: '.md,text/markdown', onchange: (e) => { const f = e.target.files[0]; if (f) f.text().then(render); } }))));
+  }
+
+  const get = (url) => fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.text() : Promise.reject(new Error(`${url}: HTTP ${r.status}`))));
+  // ?md=<url> is for local editing only: a published page never renders Markdown from an address
+  // someone else chose. It names one file, so it applies to the language the page opened in.
+  const local = location.protocol === 'file:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+  const firstLang = LANG;
+  function load() {
+    const embedded = (window.SKOPO_MD || {})[LANG];
+    if (embedded) return render(embedded);
+    const sources = [local && LANG === firstLang ? params.get('md') : null, location.protocol.startsWith('http') ? `./${LANG}.md` : null, `${REMOTE}${LANG}.md`].filter(Boolean);
+    const tryNext = (k, errors) => (k >= sources.length
+      ? fail(errors.join('; '))
+      : get(sources[k]).then(render, (e) => tryNext(k + 1, [...errors, e.message])));
+    tryNext(0, []);
+  }
+  load();
+})();
+</script>
+</body>
+</html>
