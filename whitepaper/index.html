@@ -149,7 +149,7 @@ a[data-ext]::after{content:" (" attr(href) ")";font-family:var(--mono);font-size
 .note{float:none!important;width:auto!important}
 .skopo .sk-bar,.skopo .sk-source{display:none!important}
 .skopo .sk-rendered{display:block!important}
-@page{margin:18mm 16mm}
+@page{size:A4;margin:18mm 16mm}
 }
 </style>
 </head>
@@ -452,13 +452,13 @@ a[data-ext]::after{content:" (" attr(href) ")";font-family:var(--mono);font-size
     const grid = el('div', { style: 'display:grid;grid-template-columns:minmax(0,1fr) 200px minmax(0,1fr);column-gap:18px;flex:1 1 auto;max-width:640px' },
       el('div', { style: 'height:30px;font-size:12px;color:var(--ink3);text-align:right' }, plain(t.head[1])), el('div'), el('div', { style: 'height:30px;font-size:12px;color:var(--ink3)' }, plain(t.head[2])),
       cellL(blank(top.freed), 44),
-      el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);border-radius:8px;font-size:15px;font-weight:600' }, top.name.replace(/[，,]\s*(这一级|this rung)/, '')),
+      el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px dashed var(--ink);background:var(--bg);color:var(--ink);border-radius:8px;padding:0 10px;text-align:center;font-size:15px;line-height:1.25;font-weight:600' }, top.name.replace(/[，,]\s*(这一级|this rung)/, '')),
       el('div'),
       el('div'), el('div', { style: 'height:40px;display:flex;justify-content:center;gap:14px;color:var(--ink)' }, dashedArrow('down'), dashedArrow('up')),
       el('div', { style: 'height:40px;display:flex;align-items:center;font-family:var(--mono);font-size:12px;color:var(--ink)' }, blank(top.via)),
       rungs.map((r, k) => [
         cellL(blank(r.freed), 44),
-        el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2);background:var(--bg);border-radius:8px;font-size:15px;font-weight:500' }, r.name),
+        el('div', { style: 'height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid var(--line2);background:var(--bg);border-radius:8px;padding:0 10px;text-align:center;font-size:15px;line-height:1.25;font-weight:500' }, r.name),
         el('div'),
         k < rungs.length - 1 ? [el('div'),
           el('div', { style: 'height:36px;display:flex;justify-content:center;color:var(--ink3)' }, svg('<svg width="10" height="36" viewBox="0 0 10 36"><path d="M5 2V33M1 29l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.25"/></svg>')),

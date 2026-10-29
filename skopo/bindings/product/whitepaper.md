@@ -15,3 +15,5 @@ a closer look: engineering leads, architects and product managers.
   licence, and the page that renders it under the Apache License 2.0. ^F-wqdfjy
 - A self-contained copy of the page for each language opens from disk without a server and prints to
   PDF, each section on a new page. ^F-m5m5bj
+- Each language is also offered as an A4 PDF that holds the text and its figures without the page's
+  navigation and buttons. ^F-nh8qmz

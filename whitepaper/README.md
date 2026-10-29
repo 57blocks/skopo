@@ -8,7 +8,7 @@ designed in Claude Design. The Chinese text is written first; keep the English i
 |---|---|
 | `zh.md`, `en.md` | the text, the only files to edit for wording |
 | `index.html` | the renderer: reads `<lang>.md` next to it and lays it out, figures included |
-| `build.mjs` | writes `dist/skopo-whitepaper.<lang>.html`, a self-contained copy with the Markdown embedded |
+| `build.mjs` | writes `dist/skopo-whitepaper.<lang>.html`, a self-contained copy with the Markdown embedded; with `--pdf`, prints each to `dist/skopo-whitepaper.<lang>.pdf` |
 | `design/` | the Claude Design export the renderer reproduces, kept as the reference; not committed, since it bundles the brand's fonts |
 
 ## Read it
@@ -37,7 +37,13 @@ node whitepaper/build.mjs zh
 ```
 
 The built file opens from disk, can be sent as is, and prints to PDF from the browser (each section
-on a new page).
+on a new page). To get the PDFs directly, A4, content only, figures included:
+
+```bash
+node whitepaper/build.mjs --pdf
+```
+
+It prints each language with headless Chrome, found in its usual place or given as `CHROME=<path>`.
 
 ## Skopo samples
 
